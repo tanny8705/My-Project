@@ -1,21 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import {
+  apiAdminDepartmentCreditsReport,
   apiAdminStudentCreditsReport,
   apiAdminStats,
-  apiActivities,
-  apiApprove,
-  apiReject,
   apiRules,
   apiRulesAdd,
 } from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
-
-function statusColor(s) {
-  if (s === "approved") return "var(--success)";
-  if (s === "rejected") return "var(--danger)";
-  return "var(--warning)";
-}
 
 function toCsv(rows) {
   const headers = ["student_id", "name", "prn", "activity_points", "internship_points", "grand_total"];
@@ -36,16 +28,15 @@ export default function AdminPanel() {
   const { token, user, loading } = useAuth();
 
   const [stats, setStats] = useState(null);
-  const [pending, setPending] = useState([]);
   const [rules, setRules] = useState([]);
   const [report, setReport] = useState([]);
+  const [departmentReport, setDepartmentReport] = useState([]);
 
   const [ruleForm, setRuleForm] = useState({
     category: "Technical",
     hours_required: 0,
     credits_awarded: 10,
   });
-
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
@@ -55,14 +46,14 @@ export default function AdminPanel() {
   async function refreshAll() {
     if (!token) return;
     setErr("");
-    const [s, p, r] = await Promise.all([
+    const [s, r, d] = await Promise.all([
       apiAdminStats(token),
-      apiActivities(token, "pending"),
       apiRules(),
+      apiAdminDepartmentCreditsReport(token),
     ]);
     setStats(s || {});
-    setPending(p.activities || []);
     setRules(r.rules || []);
+    setDepartmentReport(d.departments || []);
   }
 
   useEffect(() => {
@@ -70,15 +61,15 @@ export default function AdminPanel() {
     (async () => {
       try {
         if (!token || !canAccess) return;
-        const [s, p, r] = await Promise.all([
+        const [s, r, d] = await Promise.all([
           apiAdminStats(token),
-          apiActivities(token, "pending"),
           apiRules(),
+          apiAdminDepartmentCreditsReport(token),
         ]);
         if (cancelled) return;
         setStats(s || {});
-        setPending(p.activities || []);
         setRules(r.rules || []);
+        setDepartmentReport(d.departments || []);
       } catch (e) {
         if (!cancelled) setErr(e.message);
       }
@@ -91,36 +82,6 @@ export default function AdminPanel() {
   if (!token && !loading) return <Navigate to="/login" replace />;
   if (loading || !user) return <p className="muted layout">Loading…</p>;
   if (!canAccess) return <Navigate to="/dashboard" replace />;
-
-  async function approve(id) {
-    setMsg("");
-    setErr("");
-    setBusy(true);
-    try {
-      await apiApprove(token, id);
-      setMsg("Approved and credits calculated using DB rules.");
-      await refreshAll();
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function reject(id) {
-    setMsg("");
-    setErr("");
-    setBusy(true);
-    try {
-      await apiReject(token, id);
-      setMsg("Rejected. Credits not awarded.");
-      await refreshAll();
-    } catch (e) {
-      setErr(e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function addRule(e) {
     e.preventDefault();
@@ -175,7 +136,7 @@ export default function AdminPanel() {
     <div className="layout">
       <h1>Admin Dashboard</h1>
       <p className="muted">
-        Approve/reject submissions and keep credit rules in SQLite. Credits are recalculated automatically on approval.
+        System overview, analytics graph and credit rule management.
       </p>
 
       {err && <p className="error">{err}</p>}
@@ -197,42 +158,27 @@ export default function AdminPanel() {
       </div>
 
       <div style={{ marginTop: "1rem" }} className="card">
-        <h2>Review Requests</h2>
-        <p className="muted">View submissions and accept/reject. Credits are assigned only after approval.</p>
-        {pending.length === 0 ? (
-          <p className="muted">No pending requests.</p>
+        <h2>Department Credit Graph</h2>
+        <p className="muted">Visual summary by department (students + total credits).</p>
+        {departmentReport.length === 0 ? (
+          <p className="muted">No data yet.</p>
         ) : (
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {pending.map((a) => (
-              <li key={a.id} className="card" style={{ padding: "0.9rem 1rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
-                  <div>
-                    <strong>{a.title}</strong>
-                    <div className="muted" style={{ fontSize: "0.85rem", marginTop: "0.15rem" }}>
-                      {a.student_name} ({a.prn}) · {a.activity_type} · {a.total_hours}h
-                    </div>
-                    {a.description && <p style={{ margin: "0.5rem 0 0" }}>{a.description}</p>}
-                    {a.proof_path && (
-                      <a href={`/${a.proof_path}`} target="_blank" rel="noreferrer">
-                        View proof
-                      </a>
-                    )}
+          <div style={{ display: "grid", gap: "0.55rem" }}>
+            {departmentReport.map((d) => {
+              const width = Math.min(100, Math.round((d.grand_total / Math.max(1, stats?.approved_credits || 1)) * 100));
+              return (
+                <div key={d.code}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem" }}>
+                    <span>{d.code} ({d.students} students)</span>
+                    <span>{d.grand_total.toFixed(1)} credits</span>
                   </div>
-                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start" }}>
-                    <button type="button" className="btn btn-primary" onClick={() => approve(a.id)} disabled={busy}>
-                      Accept (Assign Credits)
-                    </button>
-                    <button type="button" className="btn btn-danger" onClick={() => reject(a.id)} disabled={busy}>
-                      Reject
-                    </button>
+                  <div style={{ height: 10, border: "1px solid var(--border)", borderRadius: 999, overflow: "hidden", marginTop: 4 }}>
+                    <div style={{ width: `${width}%`, height: "100%", background: "linear-gradient(90deg,var(--accent),#22c55e)" }} />
                   </div>
                 </div>
-                <div style={{ marginTop: "0.5rem" }} className="muted">
-                  Status: <span style={{ color: statusColor(a.status), fontWeight: 800 }}>{a.status}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
+              );
+            })}
+          </div>
         )}
       </div>
 

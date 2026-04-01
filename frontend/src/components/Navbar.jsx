@@ -81,7 +81,7 @@ export default function Navbar() {
                 </NavLink>
               </>
             )}
-            {(roles.has("faculty") || roles.has("admin")) && (
+            {roles.has("faculty") && (
               <NavLink
                 to="/faculty"
                 style={({ isActive }) => ({
@@ -115,15 +115,62 @@ export default function Navbar() {
               </NavLink>
             )}
             {roles.has("admin") && (
-              <NavLink
-                to="/admin"
-                style={({ isActive }) => ({
-                  color: isActive ? "var(--accent)" : "var(--muted)",
-                  fontWeight: 600,
-                })}
-              >
-                Admin
-              </NavLink>
+              <>
+                <NavLink
+                  to="/admin"
+                  style={({ isActive }) => ({
+                    color: isActive ? "var(--accent)" : "var(--muted)",
+                    fontWeight: 600,
+                  })}
+                >
+                  Admin Dashboard
+                </NavLink>
+                <NavLink
+                  to="/admin/students"
+                  style={({ isActive }) => ({
+                    color: isActive ? "var(--accent)" : "var(--muted)",
+                    fontWeight: 600,
+                  })}
+                >
+                  Students
+                </NavLink>
+                <NavLink
+                  to="/admin/faculty"
+                  style={({ isActive }) => ({
+                    color: isActive ? "var(--accent)" : "var(--muted)",
+                    fontWeight: 600,
+                  })}
+                >
+                  Faculty
+                </NavLink>
+                <NavLink
+                  to="/admin/hod"
+                  style={({ isActive }) => ({
+                    color: isActive ? "var(--accent)" : "var(--muted)",
+                    fontWeight: 600,
+                  })}
+                >
+                  HOD
+                </NavLink>
+                <NavLink
+                  to="/admin/tpo"
+                  style={({ isActive }) => ({
+                    color: isActive ? "var(--accent)" : "var(--muted)",
+                    fontWeight: 600,
+                  })}
+                >
+                  TPO
+                </NavLink>
+                <NavLink
+                  to="/admin/users"
+                  style={({ isActive }) => ({
+                    color: isActive ? "var(--accent)" : "var(--muted)",
+                    fontWeight: 600,
+                  })}
+                >
+                  Users & Depts
+                </NavLink>
+              </>
             )}
             <span className="muted" style={{ fontSize: "0.85rem" }}>
               {user.email}

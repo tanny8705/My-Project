@@ -49,6 +49,8 @@ class Student(db.Model):
     class_year = db.Column(db.String(10))  # FE, SE, TE, BE
     division = db.Column(db.String(10))
     roll_no = db.Column(db.String(20))
+    tuf_id = db.Column(db.String(30), unique=True)
+    student_type = db.Column(db.String(20), default="regular")  # regular / lateral
 
     user = db.relationship("User", backref="student_profile")
     dept = db.relationship("Department", backref="students")

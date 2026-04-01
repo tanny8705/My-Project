@@ -20,6 +20,7 @@ from application.models import (
     Rule,
     Student,
     User,
+    UserRoles,
     VerificationLog,
 )
 from application.utils.credits import calculate_credits
@@ -153,6 +154,9 @@ def register():
     if role == "student":
         dept_code = (data.get("department") or "CSE").strip().upper()
         dept = Department.query.filter_by(code=dept_code).first() or Department.query.filter_by(name=dept_code).first()
+        student_type = (data.get("student_type") or "regular").strip().lower()
+        if student_type not in ("regular", "lateral"):
+            return jsonify({"error": "student_type must be regular or lateral"}), 400
         st = Student(
             user_id=user.id,
             name=(data.get("name") or "").strip() or email.split("@")[0],
@@ -162,6 +166,8 @@ def register():
             class_year=(data.get("class_year") or "SE").strip(),
             division=(data.get("division") or "A").strip(),
             roll_no=(data.get("roll_no") or "").strip() or str(user.id),
+            tuf_id=(data.get("tuf_id") or "").strip() or None,
+            student_type=student_type,
         )
         db.session.add(st)
         db.session.flush()
@@ -224,6 +230,10 @@ def me():
             "id": st.id,
             "name": st.name,
             "prn": st.prn,
+            "roll_no": st.roll_no,
+            "division": st.division,
+            "tuf_id": getattr(st, "tuf_id", None),
+            "student_type": getattr(st, "student_type", "regular"),
             "department": dept_name or st.department,
             "class_year": st.class_year,
         }
@@ -259,6 +269,16 @@ def activity_add():
 
     if not title or not activity_type:
         return jsonify({"error": "title and activity_type required"}), 400
+    # Prevent duplicate entries for the same student/activity payload.
+    dup = Activity.query.filter_by(
+        student_id=st.id,
+        title=title,
+        activity_type=activity_type,
+        total_hours=total_hours,
+        status="pending",
+    ).first()
+    if dup:
+        return jsonify({"error": "Duplicate activity submission already pending"}), 409
 
     proof_path = None
     f = request.files.get("proof")
@@ -689,6 +709,9 @@ def admin_create_user():
     db.session.flush()
 
     if role == "student":
+        student_type = (data.get("student_type") or "regular").strip().lower()
+        if student_type not in ("regular", "lateral"):
+            return jsonify({"error": "student_type must be regular or lateral"}), 400
         st = Student(
             user_id=user.id,
             name=(data.get("name") or email.split("@")[0]).strip(),
@@ -698,6 +721,8 @@ def admin_create_user():
             class_year=(data.get("class_year") or "SE").strip(),
             division=(data.get("division") or "A").strip(),
             roll_no=(data.get("roll_no") or str(user.id)).strip(),
+            tuf_id=(data.get("tuf_id") or "").strip() or None,
+            student_type=student_type,
         )
         db.session.add(st)
         db.session.flush()
@@ -738,6 +763,90 @@ def admin_set_user_status(uid: int):
     return jsonify({"user": {"id": u.id, "email": u.email, "status": u.status, "reason": u.status_reason}})
 
 
+@api_bp.route("/admin/users", methods=["GET"])
+@jwt_required()
+def admin_list_users():
+    _, err = _require_roles("admin")
+    if err:
+        return err
+    role_filter = (request.args.get("role") or "").strip().lower()
+    users = User.query.order_by(User.id.desc()).all()
+    rows = []
+    for u in users:
+        u_roles = _user_roles(u)
+        if role_filter and role_filter not in u_roles:
+            continue
+        fac = Faculty.query.filter_by(user_id=u.id).first()
+        stu = Student.query.filter_by(user_id=u.id).first()
+        dept = None
+        if fac:
+            dept = fac.dept.code if getattr(fac, "dept", None) else fac.department
+        elif stu:
+            dept = stu.dept.code if getattr(stu, "dept", None) else stu.department
+        rows.append(
+            {
+                "id": u.id,
+                "email": u.email,
+                "roles": u_roles,
+                "status": getattr(u, "status", "active") or "active",
+                "department": dept,
+                "name": stu.name if stu else (fac.name if fac else None),
+                "prn": stu.prn if stu else None,
+                "roll_no": getattr(stu, "roll_no", None) if stu else None,
+                "division": getattr(stu, "division", None) if stu else None,
+                "tuf_id": getattr(stu, "tuf_id", None) if stu else None,
+                "student_type": getattr(stu, "student_type", None) if stu else None,
+            }
+        )
+    return jsonify({"users": rows})
+
+
+@api_bp.route("/admin/users/<int:uid>", methods=["DELETE"])
+@jwt_required()
+def admin_delete_user(uid: int):
+    _, err = _require_roles("admin")
+    if err:
+        return err
+    u = db.session.get(User, uid)
+    if not u:
+        return jsonify({"error": "Not found"}), 404
+    if "admin" in _user_roles(u):
+        return jsonify({"error": "Cannot delete admin via API"}), 400
+
+    stu = Student.query.filter_by(user_id=uid).first()
+    fac = Faculty.query.filter_by(user_id=uid).first()
+    if stu:
+        db.session.query(Activity).filter_by(student_id=stu.id).delete(synchronize_session=False)
+        db.session.query(Internship).filter_by(student_id=stu.id).delete(synchronize_session=False)
+        db.session.query(CreditSummary).filter_by(student_id=stu.id).delete(synchronize_session=False)
+        db.session.query(VerificationLog).filter_by(student_id=stu.id).delete(synchronize_session=False)
+        db.session.delete(stu)
+    if fac:
+        db.session.query(VerificationLog).filter_by(faculty_id=fac.id).delete(synchronize_session=False)
+        db.session.delete(fac)
+
+    db.session.query(UserRoles).filter_by(user_id=uid).delete(synchronize_session=False)
+    db.session.delete(u)
+    db.session.commit()
+    return jsonify({"message": "User removed"})
+
+
+@api_bp.route("/admin/departments/<int:did>", methods=["DELETE"])
+@jwt_required()
+def admin_delete_department(did: int):
+    _, err = _require_roles("admin")
+    if err:
+        return err
+    d = db.session.get(Department, did)
+    if not d:
+        return jsonify({"error": "Not found"}), 404
+    if Student.query.filter_by(department_id=d.id).first() or Faculty.query.filter_by(department_id=d.id).first():
+        return jsonify({"error": "Department has assigned users; remove/move them first"}), 400
+    db.session.delete(d)
+    db.session.commit()
+    return jsonify({"message": "Department removed"})
+
+
 @api_bp.route("/activity/<int:aid>", methods=["GET"])
 @jwt_required()
 def activity_one(aid: int):
@@ -752,7 +861,7 @@ def activity_one(aid: int):
         st = Student.query.filter_by(user_id=user.id).first()
         if not st or a.student_id != st.id:
             return jsonify({"error": "Forbidden"}), 403
-    elif "faculty" not in roles and "admin" not in roles:
+    elif "faculty" not in roles and "hod" not in roles and "admin" not in roles:
         return jsonify({"error": "Forbidden"}), 403
     return jsonify({"activity": _activity_to_dict(a)})
 
@@ -760,10 +869,15 @@ def activity_one(aid: int):
 @api_bp.route("/activity/approve/<int:aid>", methods=["POST"])
 @jwt_required()
 def activity_approve(aid: int):
-    user, err = _require_roles("faculty", "admin")
+    user, err = _require_roles("faculty", "hod", "admin")
     if err:
         return err
     a = db.session.get(Activity, aid)
+    if "admin" not in _user_roles(user):
+        dept_id = _get_actor_department_id(user)
+        if dept_id and a.student and a.student.department_id != dept_id:
+            return jsonify({"error": "Forbidden for this department"}), 403
+
     if not a:
         return jsonify({"error": "Not found"}), 404
     if a.status != "pending":
@@ -793,10 +907,14 @@ def activity_approve(aid: int):
 @api_bp.route("/activity/reject/<int:aid>", methods=["POST"])
 @jwt_required()
 def activity_reject(aid: int):
-    user, err = _require_roles("faculty", "admin")
+    user, err = _require_roles("faculty", "hod", "admin")
     if err:
         return err
     a = db.session.get(Activity, aid)
+    if "admin" not in _user_roles(user):
+        dept_id = _get_actor_department_id(user)
+        if dept_id and a.student and a.student.department_id != dept_id:
+            return jsonify({"error": "Forbidden for this department"}), 403
     if not a:
         return jsonify({"error": "Not found"}), 404
     if a.status != "pending":
@@ -993,6 +1111,86 @@ def admin_student_credits():
     return jsonify({"students": report})
 
 
+@api_bp.route("/admin/reports/department-credits", methods=["GET"])
+@jwt_required()
+def admin_department_credits():
+    _, err = _require_roles("admin")
+    if err:
+        return err
+    rows = (
+        db.session.query(
+            Department.code,
+            Department.name,
+            func.count(Student.id).label("students"),
+            func.coalesce(func.sum(CreditSummary.total_activity_points), 0.0).label("activity_points"),
+            func.coalesce(func.sum(CreditSummary.total_internship_points), 0.0).label("internship_points"),
+        )
+        .select_from(Department)
+        .outerjoin(Student, Student.department_id == Department.id)
+        .outerjoin(CreditSummary, CreditSummary.student_id == Student.id)
+        .group_by(Department.id, Department.code, Department.name)
+        .order_by(Department.code)
+        .all()
+    )
+    result = []
+    for r in rows:
+        ap = float(r.activity_points or 0.0)
+        ip = float(r.internship_points or 0.0)
+        result.append(
+            {
+                "code": r.code,
+                "name": r.name,
+                "students": int(r.students or 0),
+                "activity_points": ap,
+                "internship_points": ip,
+                "grand_total": ap + ip,
+            }
+        )
+    return jsonify({"departments": result})
+
+
+@api_bp.route("/faculty/reports/student-credits", methods=["GET"])
+@jwt_required()
+def faculty_student_credits():
+    """Branch-wise report for faculty/hod: includes students with zero points."""
+    user, err = _require_roles("faculty", "hod")
+    if err:
+        return err
+    dept_id = _get_actor_department_id(user)
+    if not dept_id:
+        return jsonify({"students": []})
+
+    rows = (
+        db.session.query(
+            Student.id,
+            Student.name,
+            Student.prn,
+            func.coalesce(CreditSummary.total_activity_points, 0.0).label("activity_points"),
+            func.coalesce(CreditSummary.total_internship_points, 0.0).label("internship_points"),
+        )
+        .select_from(Student)
+        .outerjoin(CreditSummary, CreditSummary.student_id == Student.id)
+        .filter(Student.department_id == dept_id)
+        .order_by(Student.id)
+        .all()
+    )
+    data = []
+    for r in rows:
+        ap = float(r.activity_points or 0.0)
+        ip = float(r.internship_points or 0.0)
+        data.append(
+            {
+                "student_id": r.id,
+                "name": r.name,
+                "prn": r.prn,
+                "activity_points": ap,
+                "internship_points": ip,
+                "grand_total": ap + ip,
+            }
+        )
+    return jsonify({"students": data})
+
+
 @api_bp.route("/progress/yearly", methods=["GET"])
 @jwt_required()
 def yearly_progress():
@@ -1053,8 +1251,11 @@ def eligibility():
     activity_points = float(cs.total_activity_points) if cs else 0.0
     internship_credits = float(cs.total_internship_points) if cs else 0.0
 
-    required_activity_points = float(request.args.get("required_activity_points") or 100)
-    required_internship_credits = float(request.args.get("required_internship_credits") or 3)
+    st_type = (getattr(st, "student_type", "regular") or "regular").lower()
+    default_activity = 75 if st_type == "lateral" else 100
+    default_internship = 11 if st_type == "lateral" else 14
+    required_activity_points = float(request.args.get("required_activity_points") or default_activity)
+    required_internship_credits = float(request.args.get("required_internship_credits") or default_internship)
 
     ok = (activity_points >= required_activity_points) and (internship_credits >= required_internship_credits)
     return jsonify(
@@ -1064,5 +1265,6 @@ def eligibility():
             "required_internship_credits": required_internship_credits,
             "activity_points": activity_points,
             "internship_credits": internship_credits,
+            "student_type": st_type,
         }
     )

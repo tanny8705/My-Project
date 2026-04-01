@@ -10,6 +10,11 @@ import InternshipSubmit from "./pages/InternshipSubmit.jsx";
 import InternshipSubmissions from "./pages/InternshipSubmissions.jsx";
 import FacultyPanel from "./pages/FacultyPanel.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
+import AdminStudentsPage from "./pages/AdminStudentsPage.jsx";
+import AdminFacultyPage from "./pages/AdminFacultyPage.jsx";
+import AdminUsersPage from "./pages/AdminUsersPage.jsx";
+import AdminHodPage from "./pages/AdminHodPage.jsx";
+import AdminTpoPage from "./pages/AdminTpoPage.jsx";
 import HodPanel from "./pages/HodPanel.jsx";
 import TpoPanel from "./pages/TpoPanel.jsx";
 
@@ -53,6 +58,11 @@ export default function App() {
         <Route path="/internships" element={<InternshipSubmissions />} />
         <Route path="/faculty" element={<FacultyPanel />} />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/admin/students" element={<AdminStudentsPage />} />
+        <Route path="/admin/faculty" element={<AdminFacultyPage />} />
+        <Route path="/admin/hod" element={<AdminHodPage />} />
+        <Route path="/admin/tpo" element={<AdminTpoPage />} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
         <Route path="/hod" element={<HodPanel />} />
         <Route path="/tpo" element={<TpoPanel />} />
       </Route>

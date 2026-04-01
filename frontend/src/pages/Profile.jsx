@@ -51,7 +51,11 @@ export default function Profile() {
             {student?.department ? `Department: ${student.department}` : "Department not set"}
           </div>
           <div style={{ fontWeight: 800, fontSize: "1.05rem" }}>{student?.name || "—"}</div>
-          <div className="muted">Roll No: {student?.prn || "—"}</div>
+          <div className="muted">PRN: {student?.prn || "—"}</div>
+          <div className="muted">Roll No: {student?.roll_no || "—"}</div>
+          <div className="muted">TUF ID: {student?.tuf_id || "—"}</div>
+          <div className="muted">Division: {student?.division || "—"}</div>
+          <div className="muted">Type: {student?.student_type || "regular"}</div>
         </div>
         <div className="card">
           <h2 style={{ marginTop: 0 }}>Total Credits</h2>

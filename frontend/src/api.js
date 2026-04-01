@@ -126,6 +126,83 @@ export async function apiAdminStudentCreditsReport(token) {
   return data;
 }
 
+export async function apiAdminDepartmentCreditsReport(token) {
+  const r = await fetch(`${API_BASE}/api/admin/reports/department-credits`, {
+    headers: authHeaders(token),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiAdminDepartments(token) {
+  const r = await fetch(`${API_BASE}/api/admin/departments`, { headers: authHeaders(token) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiAdminDepartmentAdd(token, payload) {
+  const r = await fetch(`${API_BASE}/api/admin/departments`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiAdminDepartmentDelete(token, id) {
+  const r = await fetch(`${API_BASE}/api/admin/departments/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiAdminUsers(token, role) {
+  const q = role ? `?role=${encodeURIComponent(role)}` : "";
+  const r = await fetch(`${API_BASE}/api/admin/users${q}`, { headers: authHeaders(token) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiAdminUserCreate(token, payload) {
+  const r = await fetch(`${API_BASE}/api/admin/users`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiAdminUserStatus(token, id, payload) {
+  const r = await fetch(`${API_BASE}/api/admin/users/${id}/status`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiAdminUserDelete(token, id) {
+  const r = await fetch(`${API_BASE}/api/admin/users/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
 export async function apiYearlyProgress(token) {
   const r = await fetch(`${API_BASE}/api/progress/yearly`, {
     headers: authHeaders(token),
@@ -184,6 +261,15 @@ export async function apiInternshipReject(token, id) {
     method: "POST",
     headers: authHeaders(token),
     body: "{}",
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiFacultyStudentCreditsReport(token) {
+  const r = await fetch(`${API_BASE}/api/faculty/reports/student-credits`, {
+    headers: authHeaders(token),
   });
   const data = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(data.error || r.statusText);

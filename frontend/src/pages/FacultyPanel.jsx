@@ -1,12 +1,42 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { apiActivities, apiApprove, apiInternshipApprove, apiInternshipReject, apiInternships, apiReject } from "../api.js";
+import {
+  apiActivities,
+  apiApprove,
+  apiFacultyStudentCreditsReport,
+  apiInternshipApprove,
+  apiInternshipReject,
+  apiInternships,
+  apiReject,
+} from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
+
+function exportCsv(rows) {
+  const headers = ["student_id", "name", "prn", "activity_points", "internship_points", "grand_total"];
+  const esc = (v) => {
+    const s = v == null ? "" : String(v);
+    if (s.includes(",") || s.includes('"') || s.includes("\n")) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  };
+  const body = [headers.join(",")]
+    .concat(rows.map((r) => headers.map((h) => esc(r[h])).join(",")))
+    .join("\n");
+  const blob = new Blob([body], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "department_student_credits.csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
 export default function FacultyPanel() {
   const { token, user, loading } = useAuth();
   const [items, setItems] = useState([]);
   const [internships, setInternships] = useState([]);
+  const [studentsReport, setStudentsReport] = useState([]);
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
 
@@ -16,6 +46,8 @@ export default function FacultyPanel() {
     setItems(data.activities || []);
     const intern = await apiInternships(token, "pending");
     setInternships(intern.internships || []);
+    const rep = await apiFacultyStudentCreditsReport(token);
+    setStudentsReport(rep.students || []);
   }
 
   useEffect(() => {
@@ -162,6 +194,44 @@ export default function FacultyPanel() {
               </li>
             ))}
           </ul>
+        )}
+      </div>
+
+      <div className="card" style={{ marginTop: "1rem" }}>
+        <h2>Department Student Credits</h2>
+        <p className="muted">All registered students in your branch are listed, even with zero points.</p>
+        {studentsReport.length > 0 && (
+          <button type="button" className="btn btn-ghost" onClick={() => exportCsv(studentsReport)} style={{ marginBottom: "0.75rem" }}>
+            Export CSV
+          </button>
+        )}
+        {studentsReport.length === 0 ? (
+          <p className="muted">No students found in your department.</p>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+              <thead>
+                <tr style={{ textAlign: "left", borderBottom: "1px solid var(--border)" }}>
+                  <th style={{ padding: "0.5rem" }}>Student</th>
+                  <th style={{ padding: "0.5rem" }}>Activity</th>
+                  <th style={{ padding: "0.5rem" }}>Internship</th>
+                  <th style={{ padding: "0.5rem" }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {studentsReport.map((r) => (
+                  <tr key={r.student_id} style={{ borderBottom: "1px solid var(--border)" }}>
+                    <td style={{ padding: "0.5rem" }}>
+                      {r.name} ({r.prn})
+                    </td>
+                    <td style={{ padding: "0.5rem" }}>{r.activity_points}</td>
+                    <td style={{ padding: "0.5rem" }}>{r.internship_points}</td>
+                    <td style={{ padding: "0.5rem" }}>{r.grand_total}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

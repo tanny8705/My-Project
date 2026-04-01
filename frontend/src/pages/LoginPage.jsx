@@ -3,6 +3,8 @@ import { Navigate } from "react-router-dom";
 import { apiLogin, apiRegister } from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
+const DEPARTMENTS = ["COMPUTER", "IT", "MECHANICAL", "CIVIL", "AIDS", "EXTC", "MECHATRONICS"];
+
 export default function LoginPage() {
   const { token, login, user } = useAuth();
   const [mode, setMode] = useState("login");
@@ -10,7 +12,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [prn, setPrn] = useState("");
-  const [department, setDepartment] = useState("CS");
+  const [rollNo, setRollNo] = useState("");
+  const [tufId, setTufId] = useState("");
+  const [division, setDivision] = useState("A");
+  const [studentType, setStudentType] = useState("regular");
+  const [department, setDepartment] = useState("COMPUTER");
   const [classYear, setClassYear] = useState("SE");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -38,6 +44,10 @@ export default function LoginPage() {
           role: "student",
           name,
           prn,
+          roll_no: rollNo,
+          tuf_id: tufId,
+          division,
+          student_type: studentType,
           department,
           class_year: classYear,
         });
@@ -106,8 +116,22 @@ export default function LoginPage() {
               <input id="prn" value={prn} onChange={(e) => setPrn(e.target.value)} required />
             </div>
             <div className="field">
+              <label htmlFor="roll_no">Roll No</label>
+              <input id="roll_no" value={rollNo} onChange={(e) => setRollNo(e.target.value)} required />
+            </div>
+            <div className="field">
+              <label htmlFor="tuf_id">TUF ID</label>
+              <input id="tuf_id" value={tufId} onChange={(e) => setTufId(e.target.value)} required />
+            </div>
+            <div className="field">
               <label htmlFor="dept">Department</label>
-              <input id="dept" value={department} onChange={(e) => setDepartment(e.target.value)} />
+              <select id="dept" value={department} onChange={(e) => setDepartment(e.target.value)}>
+                {DEPARTMENTS.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="field">
               <label htmlFor="cy">Class</label>
@@ -118,6 +142,17 @@ export default function LoginPage() {
                 <option value="BE">BE</option>
               </select>
             </div>
+            <div className="field">
+              <label htmlFor="div">Division</label>
+              <input id="div" value={division} onChange={(e) => setDivision(e.target.value)} />
+            </div>
+            <div className="field">
+              <label htmlFor="stype">Student Type</label>
+              <select id="stype" value={studentType} onChange={(e) => setStudentType(e.target.value)}>
+                <option value="regular">Regular</option>
+                <option value="lateral">Lateral (Diploma Entry)</option>
+              </select>
+            </div>
           </>
         )}
         <button type="submit" className="btn btn-primary" disabled={busy} style={{ width: "100%" }}>
@@ -125,13 +160,13 @@ export default function LoginPage() {
         </button>
       </form>
       <p className="muted" style={{ marginTop: "1.25rem", fontSize: "0.85rem" }}>
-        Demo faculty: <code>faculty123@gmail.com</code> / <code>faculty@123</code>
+        Admin: <code>admin123@gmail.com</code> / <code>admin@123</code>
         <br />
-        Demo HOD: <code>hod123@gmail.com</code> / <code>hod@123</code>
+        TPO: <code>tpo123@gmail.com</code> / <code>tpo@123</code>
         <br />
-        Demo TPO: <code>tpo123@gmail.com</code> / <code>tpo@123</code>
+        Branch Faculty: <code>&lt;department&gt;_faculty@gmail.com</code> / <code>faculty@123</code>
         <br />
-        Demo admin: <code>admin123@gmail.com</code> / <code>admin@123</code>
+        Branch HOD: <code>&lt;department&gt;_hod@gmail.com</code> / <code>hod@123</code>
       </p>
     </div>
   );
