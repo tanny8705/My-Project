@@ -125,3 +125,67 @@ export async function apiAdminStudentCreditsReport(token) {
   if (!r.ok) throw new Error(data.error || r.statusText);
   return data;
 }
+
+export async function apiYearlyProgress(token) {
+  const r = await fetch(`${API_BASE}/api/progress/yearly`, {
+    headers: authHeaders(token),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiEligibility(token) {
+  const r = await fetch(`${API_BASE}/api/eligibility`, { headers: authHeaders(token) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiInternshipAdd(token, formData) {
+  const r = await fetch(`${API_BASE}/api/internship/add`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiInternships(token, status) {
+  const q = status ? `?status=${encodeURIComponent(status)}` : "";
+  const r = await fetch(`${API_BASE}/api/internship/all${q}`, { headers: authHeaders(token) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiInternshipQueue(token) {
+  const r = await fetch(`${API_BASE}/api/internship/queue`, { headers: authHeaders(token) });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiInternshipApprove(token, id) {
+  const r = await fetch(`${API_BASE}/api/internship/approve/${id}`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: "{}",
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+export async function apiInternshipReject(token, id) {
+  const r = await fetch(`${API_BASE}/api/internship/reject/${id}`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: "{}",
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}

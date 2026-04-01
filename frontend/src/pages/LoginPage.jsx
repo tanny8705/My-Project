@@ -18,6 +18,8 @@ export default function LoginPage() {
   if (token && user) {
     if (user.roles?.includes("admin")) return <Navigate to="/admin" replace />;
     if (user.roles?.includes("faculty")) return <Navigate to="/faculty" replace />;
+    if (user.roles?.includes("hod")) return <Navigate to="/hod" replace />;
+    if (user.roles?.includes("tpo")) return <Navigate to="/tpo" replace />;
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -124,6 +126,10 @@ export default function LoginPage() {
       </form>
       <p className="muted" style={{ marginTop: "1.25rem", fontSize: "0.85rem" }}>
         Demo faculty: <code>faculty123@gmail.com</code> / <code>faculty@123</code>
+        <br />
+        Demo HOD: <code>hod123@gmail.com</code> / <code>hod@123</code>
+        <br />
+        Demo TPO: <code>tpo123@gmail.com</code> / <code>tpo@123</code>
         <br />
         Demo admin: <code>admin123@gmail.com</code> / <code>admin@123</code>
       </p>

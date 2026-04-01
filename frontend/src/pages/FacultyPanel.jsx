@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { apiActivities, apiApprove, apiReject } from "../api.js";
+import { apiActivities, apiApprove, apiInternshipApprove, apiInternshipReject, apiInternships, apiReject } from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
 export default function FacultyPanel() {
   const { token, user, loading } = useAuth();
   const [items, setItems] = useState([]);
+  const [internships, setInternships] = useState([]);
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
 
@@ -13,6 +14,8 @@ export default function FacultyPanel() {
     if (!token) return;
     const data = await apiActivities(token, "pending");
     setItems(data.activities || []);
+    const intern = await apiInternships(token, "pending");
+    setInternships(intern.internships || []);
   }
 
   useEffect(() => {
@@ -35,6 +38,8 @@ export default function FacultyPanel() {
   if (!token && !loading) return <Navigate to="/login" replace />;
   if (loading || !user) return <p className="muted layout">Loading…</p>;
   const canModerate = user.roles?.includes("faculty") || user.roles?.includes("admin");
+  if (user.roles?.includes("hod")) return <Navigate to="/hod" replace />;
+  if (user.roles?.includes("tpo")) return <Navigate to="/tpo" replace />;
   if (!canModerate) return <Navigate to="/dashboard" replace />;
 
   async function approve(id) {
@@ -55,6 +60,30 @@ export default function FacultyPanel() {
     try {
       await apiReject(token, id);
       setMsg("Rejected.");
+      await load();
+    } catch (e) {
+      setErr(e.message);
+    }
+  }
+
+  async function approveInternship(id) {
+    setMsg("");
+    setErr("");
+    try {
+      await apiInternshipApprove(token, id);
+      setMsg("Internship approved and credits assigned.");
+      await load();
+    } catch (e) {
+      setErr(e.message);
+    }
+  }
+
+  async function rejectInternship(id) {
+    setMsg("");
+    setErr("");
+    try {
+      await apiInternshipReject(token, id);
+      setMsg("Internship rejected.");
       await load();
     } catch (e) {
       setErr(e.message);
@@ -99,6 +128,42 @@ export default function FacultyPanel() {
           ))}
         </ul>
       )}
+
+      <div className="card" style={{ marginTop: "1rem" }}>
+        <h2>Pending internships</h2>
+        <p className="muted">In-house requires HOD; out-house requires TPO.</p>
+        {internships.length === 0 ? (
+          <p className="muted">No pending internships.</p>
+        ) : (
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            {internships.map((i) => (
+              <li key={i.id} className="card">
+                <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+                  <div>
+                    <strong>{i.title}</strong>
+                    <div className="muted" style={{ fontSize: "0.85rem" }}>
+                      {i.student_name} ({i.prn}) · {i.company_name} · {i.internship_type} · {i.total_hours}h
+                    </div>
+                    {i.report_path && (
+                      <a href={`/${i.report_path}`} target="_blank" rel="noreferrer">
+                        Open report
+                      </a>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start" }}>
+                    <button type="button" className="btn btn-primary" onClick={() => approveInternship(i.id)}>
+                      Approve
+                    </button>
+                    <button type="button" className="btn btn-danger" onClick={() => rejectInternship(i.id)}>
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

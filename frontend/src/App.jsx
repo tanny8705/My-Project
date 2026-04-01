@@ -6,8 +6,12 @@ import Dashboard from "./pages/Dashboard.jsx";
 import AddActivity from "./pages/AddActivity.jsx";
 import ActivityHistory from "./pages/ActivityHistory.jsx";
 import Profile from "./pages/Profile.jsx";
+import InternshipSubmit from "./pages/InternshipSubmit.jsx";
+import InternshipSubmissions from "./pages/InternshipSubmissions.jsx";
 import FacultyPanel from "./pages/FacultyPanel.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
+import HodPanel from "./pages/HodPanel.jsx";
+import TpoPanel from "./pages/TpoPanel.jsx";
 
 function Layout() {
   return (
@@ -30,6 +34,8 @@ function Home() {
   if (!token) return <Navigate to="/login" replace />;
   if (user?.roles?.includes("admin")) return <Navigate to="/admin" replace />;
   if (user?.roles?.includes("faculty")) return <Navigate to="/faculty" replace />;
+  if (user?.roles?.includes("hod")) return <Navigate to="/hod" replace />;
+  if (user?.roles?.includes("tpo")) return <Navigate to="/tpo" replace />;
   return <Navigate to="/dashboard" replace />;
 }
 
@@ -43,8 +49,12 @@ export default function App() {
         <Route path="/add-activity" element={<AddActivity />} />
         <Route path="/history" element={<ActivityHistory />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/internship-submit" element={<InternshipSubmit />} />
+        <Route path="/internships" element={<InternshipSubmissions />} />
         <Route path="/faculty" element={<FacultyPanel />} />
         <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/hod" element={<HodPanel />} />
+        <Route path="/tpo" element={<TpoPanel />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

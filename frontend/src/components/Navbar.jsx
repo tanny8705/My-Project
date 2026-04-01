@@ -62,6 +62,15 @@ export default function Navbar() {
                   Add activity
                 </NavLink>
                 <NavLink
+                  to="/internship-submit"
+                  style={({ isActive }) => ({
+                    color: isActive ? "var(--accent)" : "var(--muted)",
+                    fontWeight: 600,
+                  })}
+                >
+                  Submit internship
+                </NavLink>
+                <NavLink
                   to="/history"
                   style={({ isActive }) => ({
                     color: isActive ? "var(--accent)" : "var(--muted)",
@@ -81,6 +90,28 @@ export default function Navbar() {
                 })}
               >
                 Faculty panel
+              </NavLink>
+            )}
+            {roles.has("hod") && (
+              <NavLink
+                to="/hod"
+                style={({ isActive }) => ({
+                  color: isActive ? "var(--accent)" : "var(--muted)",
+                  fontWeight: 600,
+                })}
+              >
+                HOD panel
+              </NavLink>
+            )}
+            {roles.has("tpo") && (
+              <NavLink
+                to="/tpo"
+                style={({ isActive }) => ({
+                  color: isActive ? "var(--accent)" : "var(--muted)",
+                  fontWeight: 600,
+                })}
+              >
+                TPO panel
               </NavLink>
             )}
             {roles.has("admin") && (

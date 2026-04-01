@@ -8,6 +8,7 @@ from application.database import db
 from application.models import (  # noqa: F401 — register all tables
     Activity,
     CreditSummary,
+    Department,
     Faculty,
     Internship,
     Role,
@@ -54,6 +55,13 @@ with app.app_context():
     db.create_all()
     ensure_rules_seed()
 
+    # Seed departments (demo)
+    if not Department.query.first():
+        db.session.add(Department(code="CSE", name="Computer Science and Engineering"))
+        db.session.add(Department(code="MECH", name="Mechanical Engineering"))
+        db.session.add(Department(code="IT", name="Information Technology"))
+        db.session.commit()
+
     app.security.datastore.find_or_create_role(
         name="student"
     )
@@ -64,6 +72,14 @@ with app.app_context():
 
     app.security.datastore.find_or_create_role(
         name="admin"
+    )
+
+    app.security.datastore.find_or_create_role(
+        name="hod"
+    )
+
+    app.security.datastore.find_or_create_role(
+        name="tpo"
     )
 
     db.session.commit()
@@ -84,12 +100,55 @@ with app.app_context():
             active=True,
         )
         db.session.flush()
+        cse = Department.query.filter_by(code="CSE").first()
         db.session.add(
             Faculty(
                 user_id=fu.id,
                 name="Demo Faculty",
-                department="CS",
+                department_id=cse.id if cse else None,
+                department="CSE",
                 designation="Mentor",
+            )
+        )
+
+    db.session.commit()
+
+    # Demo verifier accounts for internship flow
+    if not app.security.datastore.find_user(email="hod123@gmail.com"):
+        hu = app.security.datastore.create_user(
+            email="hod123@gmail.com",
+            password=hash_password("hod@123"),
+            roles=["hod"],
+            active=True,
+        )
+        db.session.flush()
+        cse = Department.query.filter_by(code="CSE").first()
+        db.session.add(
+            Faculty(
+                user_id=hu.id,
+                name="Demo HOD",
+                department_id=cse.id if cse else None,
+                department="CSE",
+                designation="HOD",
+            )
+        )
+
+    if not app.security.datastore.find_user(email="tpo123@gmail.com"):
+        tu = app.security.datastore.create_user(
+            email="tpo123@gmail.com",
+            password=hash_password("tpo@123"),
+            roles=["tpo"],
+            active=True,
+        )
+        db.session.flush()
+        # TPO is global; department_id left NULL
+        db.session.add(
+            Faculty(
+                user_id=tu.id,
+                name="Demo TPO",
+                department_id=None,
+                department=None,
+                designation="TPO",
             )
         )
 
