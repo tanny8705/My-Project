@@ -6,6 +6,7 @@ function authHeaders(token) {
   return h;
 }
 
+<<<<<<< HEAD
 async function downloadCsv(token, urlPath) {
   const r = await fetch(`${API_BASE}${urlPath}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -43,6 +44,8 @@ export async function apiAdminActorsCsv(token, role) {
   return downloadCsv(token, `/api/admin/reports/actors.csv?${q.toString()}`);
 }
 
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 export async function apiRegister(body) {
   const r = await fetch(`${API_BASE}/api/register`, {
     method: "POST",
@@ -230,6 +233,7 @@ export async function apiAdminUserStatus(token, id, payload) {
   return data;
 }
 
+<<<<<<< HEAD
 export async function apiAdminUserUpdate(token, id, payload) {
   const r = await fetch(`${API_BASE}/api/admin/users/${id}`, {
     method: "PUT",
@@ -252,6 +256,8 @@ export async function apiAdminDepartmentUpdate(token, id, payload) {
   return data;
 }
 
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 export async function apiAdminUserDelete(token, id) {
   const r = await fetch(`${API_BASE}/api/admin/users/${id}`, {
     method: "DELETE",

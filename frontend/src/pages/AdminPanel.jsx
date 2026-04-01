@@ -2,11 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import {
   apiAdminDepartmentCreditsReport,
+<<<<<<< HEAD
   apiAdminActorsCsv,
   apiAdminStudentCreditsReport,
   apiAdminStudentsCsv,
   apiAdminStats,
   apiAdminVerificationsCsv,
+=======
+  apiAdminStudentCreditsReport,
+  apiAdminStats,
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
   apiRules,
   apiRulesAdd,
 } from "../api.js";
@@ -27,6 +32,7 @@ function toCsv(rows) {
   return lines.join("\n");
 }
 
+<<<<<<< HEAD
 function saveBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -38,6 +44,8 @@ function saveBlob(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 export default function AdminPanel() {
   const { token, user, loading } = useAuth();
 
@@ -128,7 +136,19 @@ export default function AdminPanel() {
       setReport(rows);
 
       const csv = toCsv(rows);
+<<<<<<< HEAD
       saveBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), "student_credits_report.csv");
+=======
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "student_credits_report.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 
       setMsg("Exported student-wise credits (CSV).");
     } catch (e) {
@@ -138,6 +158,7 @@ export default function AdminPanel() {
     }
   }
 
+<<<<<<< HEAD
   async function downloadFullStudentsCsv() {
     setErr("");
     setMsg("");
@@ -183,6 +204,8 @@ export default function AdminPanel() {
     }
   }
 
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
   return (
     <div className="layout">
       <h1>Admin Dashboard</h1>
@@ -293,6 +316,7 @@ export default function AdminPanel() {
 
       <div style={{ marginTop: "1rem" }} className="card">
         <h2>Reports</h2>
+<<<<<<< HEAD
         <p className="muted">Download CSV reports (students + audit + role reports).</p>
 
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
@@ -315,6 +339,13 @@ export default function AdminPanel() {
             Download TPO report
           </button>
         </div>
+=======
+        <p className="muted">Student-wise credits report and CSV export.</p>
+
+        <button type="button" className="btn btn-primary" disabled={busy} onClick={exportStudentCredits}>
+          Export data
+        </button>
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 
         {report.length > 0 && (
           <div className="card" style={{ marginTop: "1rem", overflowX: "auto" }}>

@@ -64,7 +64,10 @@ class Faculty(db.Model):
     name = db.Column(db.String(100))
     department_id = db.Column(db.Integer, db.ForeignKey("departments.id"), nullable=True)
     department = db.Column(db.String(50))  # legacy display; prefer department_id
+<<<<<<< HEAD
     division = db.Column(db.String(10))  # A/B/C/D (used for scoped access)
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
     designation = db.Column(db.String(50))  # HOD, Mentor, TPO
 
     user = db.relationship("User", backref="faculty_profile")

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+<<<<<<< HEAD
 import { apiInternshipApprove, apiInternshipQueue, apiInternshipReject, apiScopedStudentsCsv } from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -14,6 +15,11 @@ function saveBlob(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
+=======
+import { apiInternshipApprove, apiInternshipQueue, apiInternshipReject } from "../api.js";
+import { useAuth } from "../context/AuthContext.jsx";
+
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 export default function HodPanel() {
   const { token, user, loading } = useAuth();
   const [items, setItems] = useState([]);
@@ -69,6 +75,7 @@ export default function HodPanel() {
     }
   }
 
+<<<<<<< HEAD
   async function downloadStudentsCsv() {
     setErr("");
     setMsg("");
@@ -81,6 +88,8 @@ export default function HodPanel() {
     }
   }
 
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
   return (
     <div className="layout">
       <h1>HOD Dashboard</h1>
@@ -89,9 +98,12 @@ export default function HodPanel() {
       </p>
       {err && <p className="error">{err}</p>}
       {msg && <p style={{ color: "var(--success)" }}>{msg}</p>}
+<<<<<<< HEAD
       <button type="button" className="btn btn-ghost" onClick={downloadStudentsCsv} style={{ marginBottom: "0.75rem" }}>
         Download students report (CSV)
       </button>
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 
       {items.length === 0 ? (
         <p className="muted">No items in your queue.</p>

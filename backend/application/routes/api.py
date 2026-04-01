@@ -3,10 +3,14 @@ from __future__ import annotations
 import os
 from datetime import datetime
 
+<<<<<<< HEAD
 import csv
 import io
 
 from flask import Blueprint, current_app, jsonify, request, Response
+=======
+from flask import Blueprint, current_app, jsonify, request
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 from sqlalchemy import case, func
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from flask_security import hash_password
@@ -71,6 +75,7 @@ def _get_actor_department_id(user: User) -> int | None:
     return None
 
 
+<<<<<<< HEAD
 def _get_actor_division(user: User) -> str | None:
     fac = Faculty.query.filter_by(user_id=user.id).first()
     if fac:
@@ -96,6 +101,8 @@ def _apply_student_scope(user: User, q, *, student_model=Student):
     return q
 
 
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 def _require_roles(*allowed: str):
     user = _load_user()
     if not user:
@@ -273,7 +280,10 @@ def me():
             "name": fac.name,
             "department": dept_name or fac.department,
             "designation": fac.designation,
+<<<<<<< HEAD
             "division": getattr(fac, "division", None),
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
         }
     return jsonify(payload)
 
@@ -456,8 +466,15 @@ def internship_all():
         return jsonify({"internships": [_internship_to_dict(i) for i in items]})
 
     if "hod" in roles or "faculty" in roles:
+<<<<<<< HEAD
         q = Internship.query.join(Student, Internship.student_id == Student.id)
         q = _apply_student_scope(user, q, student_model=Student)
+=======
+        dept_id = _get_actor_department_id(user)
+        q = Internship.query.join(Student, Internship.student_id == Student.id)
+        if dept_id:
+            q = q.filter(Student.department_id == dept_id)
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
         if status_filter:
             q = q.filter(Internship.status == status_filter)
         items = q.order_by(Internship.created_at.desc()).all()
@@ -507,12 +524,21 @@ def internship_queue():
         return jsonify({"internships": [_internship_to_dict(i) for i in items]})
 
     if "hod" in roles:
+<<<<<<< HEAD
+=======
+        dept_id = _get_actor_department_id(user)
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
         q = Internship.query.filter(
                 ((Internship.internship_type == "in_house") & (Internship.status == "pending"))
                 | ((Internship.internship_type == "out_house") & (Internship.status == "tpo_verified"))
             )
+<<<<<<< HEAD
         q = q.join(Student, Internship.student_id == Student.id)
         q = _apply_student_scope(user, q, student_model=Student)
+=======
+        if dept_id:
+            q = q.join(Student, Internship.student_id == Student.id).filter(Student.department_id == dept_id)
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
         items = q.order_by(Internship.created_at.desc()).all()
         return jsonify({"internships": [_internship_to_dict(i) for i in items]})
 
@@ -530,6 +556,7 @@ def internship_approve(iid: int):
     it = db.session.get(Internship, iid)
     if not it:
         return jsonify({"error": "Not found"}), 404
+<<<<<<< HEAD
     # Enforce dept+division scoping (non-admin)
     if "admin" not in roles and ("hod" in roles or "faculty" in roles or "tpo" in roles):
         dept_id = _get_actor_department_id(user)
@@ -538,6 +565,8 @@ def internship_approve(iid: int):
             div and it.student and (it.student.division or "").lower() != div.lower()
         ):
             return jsonify({"error": "Forbidden for this student scope"}), 403
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
     # Two-stage for out-house (matches documentation): TPO verifies → HOD final approves.
     if it.internship_type == "in_house":
         if it.status != "pending":
@@ -596,6 +625,7 @@ def internship_reject(iid: int):
     it = db.session.get(Internship, iid)
     if not it:
         return jsonify({"error": "Not found"}), 404
+<<<<<<< HEAD
     # Enforce dept+division scoping (non-admin)
     if "admin" not in _user_roles(user):
         dept_id = _get_actor_department_id(user)
@@ -604,6 +634,8 @@ def internship_reject(iid: int):
             div and it.student and (it.student.division or "").lower() != div.lower()
         ):
             return jsonify({"error": "Forbidden for this student scope"}), 403
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
     if it.status not in ("pending", "tpo_verified"):
         return jsonify({"error": "Internship not pending"}), 400
 
@@ -657,8 +689,15 @@ def activity_all():
         return jsonify({"activities": [_activity_to_dict(a) for a in acts]})
 
     if "faculty" in roles or "hod" in roles:
+<<<<<<< HEAD
         q = Activity.query.join(Student, Activity.student_id == Student.id)
         q = _apply_student_scope(user, q, student_model=Student)
+=======
+        dept_id = _get_actor_department_id(user)
+        q = Activity.query.join(Student, Activity.student_id == Student.id)
+        if dept_id:
+            q = q.filter(Student.department_id == dept_id)
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
         if status_filter:
             q = q.filter(Activity.status == status_filter)
         acts = q.order_by(Activity.created_at.desc()).all()
@@ -682,8 +721,15 @@ def activity_queue():
         acts = Activity.query.filter_by(status="pending").order_by(Activity.created_at.desc()).all()
         return jsonify({"activities": [_activity_to_dict(a) for a in acts]})
     if "faculty" in roles or "hod" in roles:
+<<<<<<< HEAD
         q = Activity.query.filter_by(status="pending").join(Student, Activity.student_id == Student.id)
         q = _apply_student_scope(user, q, student_model=Student)
+=======
+        dept_id = _get_actor_department_id(user)
+        q = Activity.query.filter_by(status="pending").join(Student, Activity.student_id == Student.id)
+        if dept_id:
+            q = q.filter(Student.department_id == dept_id)
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
         acts = q.order_by(Activity.created_at.desc()).all()
         return jsonify({"activities": [_activity_to_dict(a) for a in acts]})
     return jsonify({"error": "Forbidden"}), 403
@@ -730,7 +776,10 @@ def admin_create_user():
     password = data.get("password") or ""
     role = (data.get("role") or "").strip().lower()
     dept_code = (data.get("department_code") or "").strip().upper()
+<<<<<<< HEAD
     division = (data.get("division") or "").strip()
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 
     if role not in ("student", "faculty", "hod", "tpo", "admin"):
         return jsonify({"error": "invalid role"}), 400
@@ -742,8 +791,11 @@ def admin_create_user():
     dept = Department.query.filter_by(code=dept_code).first() if dept_code else None
     if role in ("student", "faculty", "hod") and not dept:
         return jsonify({"error": "department_code required for student/faculty/hod"}), 400
+<<<<<<< HEAD
     if role in ("faculty", "hod") and not division:
         return jsonify({"error": "division required for faculty/hod"}), 400
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 
     ds = current_app.security.datastore
     user = ds.create_user(email=email, password=hash_password(password), roles=[role], active=True)
@@ -775,7 +827,10 @@ def admin_create_user():
             name=(data.get("name") or email.split("@")[0]).strip(),
             department_id=dept.id if dept else None,
             department=dept.code if dept else (dept_code or None),
+<<<<<<< HEAD
             division=division or None,
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
             designation=(data.get("designation") or role.upper()).strip(),
         )
         db.session.add(fac)
@@ -805,6 +860,7 @@ def admin_set_user_status(uid: int):
     return jsonify({"user": {"id": u.id, "email": u.email, "status": u.status, "reason": u.status_reason}})
 
 
+<<<<<<< HEAD
 @api_bp.route("/admin/users/<int:uid>", methods=["PUT"])
 @jwt_required()
 def admin_update_user(uid: int):
@@ -896,6 +952,8 @@ def admin_update_department(did: int):
     return jsonify({"department": {"id": d.id, "code": d.code, "name": d.name}})
 
 
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 @api_bp.route("/admin/users", methods=["GET"])
 @jwt_required()
 def admin_list_users():
@@ -926,7 +984,11 @@ def admin_list_users():
                 "name": stu.name if stu else (fac.name if fac else None),
                 "prn": stu.prn if stu else None,
                 "roll_no": getattr(stu, "roll_no", None) if stu else None,
+<<<<<<< HEAD
                 "division": getattr(stu, "division", None) if stu else (getattr(fac, "division", None) if fac else None),
+=======
+                "division": getattr(stu, "division", None) if stu else None,
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
                 "tuf_id": getattr(stu, "tuf_id", None) if stu else None,
                 "student_type": getattr(stu, "student_type", None) if stu else None,
             }
@@ -1006,6 +1068,7 @@ def activity_approve(aid: int):
     if err:
         return err
     a = db.session.get(Activity, aid)
+<<<<<<< HEAD
     if not a:
         return jsonify({"error": "Not found"}), 404
     if "admin" not in _user_roles(user):
@@ -1015,6 +1078,15 @@ def activity_approve(aid: int):
             div and a.student and (a.student.division or "").lower() != div.lower()
         ):
             return jsonify({"error": "Forbidden for this student scope"}), 403
+=======
+    if "admin" not in _user_roles(user):
+        dept_id = _get_actor_department_id(user)
+        if dept_id and a.student and a.student.department_id != dept_id:
+            return jsonify({"error": "Forbidden for this department"}), 403
+
+    if not a:
+        return jsonify({"error": "Not found"}), 404
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
     if a.status != "pending":
         return jsonify({"error": "Activity not pending"}), 400
 
@@ -1046,6 +1118,7 @@ def activity_reject(aid: int):
     if err:
         return err
     a = db.session.get(Activity, aid)
+<<<<<<< HEAD
     if not a:
         return jsonify({"error": "Not found"}), 404
     if "admin" not in _user_roles(user):
@@ -1055,6 +1128,14 @@ def activity_reject(aid: int):
             div and a.student and (a.student.division or "").lower() != div.lower()
         ):
             return jsonify({"error": "Forbidden for this student scope"}), 403
+=======
+    if "admin" not in _user_roles(user):
+        dept_id = _get_actor_department_id(user)
+        if dept_id and a.student and a.student.department_id != dept_id:
+            return jsonify({"error": "Forbidden for this department"}), 403
+    if not a:
+        return jsonify({"error": "Not found"}), 404
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
     if a.status != "pending":
         return jsonify({"error": "Activity not pending"}), 400
 
@@ -1155,9 +1236,12 @@ def rules_add():
         return jsonify({"error": "Invalid numbers"}), 400
     if not cat:
         return jsonify({"error": "category required"}), 400
+<<<<<<< HEAD
     # Prevent duplicate activity type/category names (case-insensitive).
     if Rule.query.filter(func.lower(Rule.category) == cat.lower()).first():
         return jsonify({"error": "Category already exists"}), 409
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
     r = Rule(category=cat, hours_required=hrs, credits_awarded=cred)
     db.session.add(r)
     db.session.commit()
@@ -1306,7 +1390,10 @@ def faculty_student_credits():
             Student.id,
             Student.name,
             Student.prn,
+<<<<<<< HEAD
             Student.division,
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
             func.coalesce(CreditSummary.total_activity_points, 0.0).label("activity_points"),
             func.coalesce(CreditSummary.total_internship_points, 0.0).label("internship_points"),
         )
@@ -1318,9 +1405,12 @@ def faculty_student_credits():
     )
     data = []
     for r in rows:
+<<<<<<< HEAD
         actor_div = _get_actor_division(user)
         if actor_div and (r.division or "").lower() != actor_div.lower():
             continue
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
         ap = float(r.activity_points or 0.0)
         ip = float(r.internship_points or 0.0)
         data.append(
@@ -1328,7 +1418,10 @@ def faculty_student_credits():
                 "student_id": r.id,
                 "name": r.name,
                 "prn": r.prn,
+<<<<<<< HEAD
                 "division": r.division,
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
                 "activity_points": ap,
                 "internship_points": ip,
                 "grand_total": ap + ip,
@@ -1337,6 +1430,7 @@ def faculty_student_credits():
     return jsonify({"students": data})
 
 
+<<<<<<< HEAD
 def _csv_response(filename: str, rows: list[dict], headers: list[str]) -> Response:
     buf = io.StringIO()
     w = csv.writer(buf)
@@ -1351,6 +1445,8 @@ def _csv_response(filename: str, rows: list[dict], headers: list[str]) -> Respon
     )
 
 
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 @api_bp.route("/progress/yearly", methods=["GET"])
 @jwt_required()
 def yearly_progress():
@@ -1428,6 +1524,7 @@ def eligibility():
             "student_type": st_type,
         }
     )
+<<<<<<< HEAD
 
 
 @api_bp.route("/admin/reports/students.csv", methods=["GET"])
@@ -1753,3 +1850,5 @@ def admin_actors_csv():
         "rejected_count",
     ]
     return _csv_response(f"{role}_report.csv", rows, headers)
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661

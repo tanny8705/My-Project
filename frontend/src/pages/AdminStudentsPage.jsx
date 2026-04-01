@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { apiAdminStudentCreditsReport, apiAdminUserCreate, apiAdminUserDelete, apiAdminUserUpdate, apiAdminUsers, apiAdminUserStatus } from "../api.js";
+=======
+import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import { apiAdminStudentCreditsReport, apiAdminUserCreate, apiAdminUserDelete, apiAdminUsers, apiAdminUserStatus } from "../api.js";
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 import { useAuth } from "../context/AuthContext.jsx";
 
 export default function AdminStudentsPage() {
@@ -9,8 +15,11 @@ export default function AdminStudentsPage() {
   const [users, setUsers] = useState([]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+<<<<<<< HEAD
   const [sortKey, setSortKey] = useState("email");
   const [sortDir, setSortDir] = useState("asc");
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -45,6 +54,7 @@ export default function AdminStudentsPage() {
     };
   }, [token, user]);
 
+<<<<<<< HEAD
   async function refresh() {
     const data = await apiAdminStudentCreditsReport(token);
     const us = await apiAdminUsers(token, "student");
@@ -52,6 +62,8 @@ export default function AdminStudentsPage() {
     setUsers(us.users || []);
   }
 
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
   if (!token && !loading) return <Navigate to="/login" replace />;
   if (loading || !user) return <p className="muted layout">Loading…</p>;
   if (!user.roles?.includes("admin")) return <Navigate to="/dashboard" replace />;
@@ -63,17 +75,25 @@ export default function AdminStudentsPage() {
       await apiAdminUserCreate(token, { ...form, role: "student" });
       setMsg("Student added.");
       setForm({ ...form, email: "", password: "", name: "", prn: "", roll_no: "", tuf_id: "" });
+<<<<<<< HEAD
       await refresh();
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
     } catch (e2) { setErr(e2.message); } finally { setBusy(false); }
   }
 
   async function setStatus(id, status) {
     setBusy(true); setErr(""); setMsg("");
+<<<<<<< HEAD
     try { await apiAdminUserStatus(token, id, { status }); setMsg(`Student ${status}`); await refresh(); } catch (e2) { setErr(e2.message); } finally { setBusy(false); }
+=======
+    try { await apiAdminUserStatus(token, id, { status }); setMsg(`Student ${status}`); } catch (e2) { setErr(e2.message); } finally { setBusy(false); }
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
   }
 
   async function removeUser(id) {
     setBusy(true); setErr(""); setMsg("");
+<<<<<<< HEAD
     try { await apiAdminUserDelete(token, id); setMsg("Student removed."); await refresh(); } catch (e2) { setErr(e2.message); } finally { setBusy(false); }
   }
 
@@ -117,6 +137,9 @@ export default function AdminStudentsPage() {
   function toggleSort(key) {
     if (sortKey === key) setSortDir(sortDir === "asc" ? "desc" : "asc");
     else { setSortKey(key); setSortDir("asc"); }
+=======
+    try { await apiAdminUserDelete(token, id); setMsg("Student removed."); } catch (e2) { setErr(e2.message); } finally { setBusy(false); }
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
   }
 
   return (
@@ -147,6 +170,7 @@ export default function AdminStudentsPage() {
       <div className="card" style={{ overflowX: "auto", marginBottom: "1rem" }}>
         <h2>Student Accounts</h2>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+<<<<<<< HEAD
           <thead>
             <tr style={{ textAlign: "left", borderBottom: "1px solid var(--border)" }}>
               <th style={{ padding: "0.5rem", cursor: "pointer" }} onClick={() => toggleSort("email")}>Email</th>
@@ -165,6 +189,16 @@ export default function AdminStudentsPage() {
                 <td style={{ padding: "0.5rem" }}>{u.status}</td>
                 <td style={{ padding: "0.5rem", display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
                   <button type="button" className="btn btn-ghost" onClick={() => editStudent(u)}>Edit</button>
+=======
+          <thead><tr style={{ textAlign: "left", borderBottom: "1px solid var(--border)" }}><th style={{ padding: "0.5rem" }}>Email</th><th style={{ padding: "0.5rem" }}>PRN</th><th style={{ padding: "0.5rem" }}>Status</th><th style={{ padding: "0.5rem" }}>Actions</th></tr></thead>
+          <tbody>
+            {users.map((u) => (
+              <tr key={u.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                <td style={{ padding: "0.5rem" }}>{u.email}</td>
+                <td style={{ padding: "0.5rem" }}>{u.prn || "-"}</td>
+                <td style={{ padding: "0.5rem" }}>{u.status}</td>
+                <td style={{ padding: "0.5rem", display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
                   <button type="button" className="btn btn-ghost" onClick={() => setStatus(u.id, "active")}>Unblock</button>
                   <button type="button" className="btn btn-ghost" onClick={() => setStatus(u.id, "blocked")}>Block</button>
                   <button type="button" className="btn btn-danger" onClick={() => setStatus(u.id, "blacklisted")}>Blacklist</button>
