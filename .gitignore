@@ -1,0 +1,8 @@
+backend/instance/
+backend/uploads/
+backend/**/__pycache__/
+backend/local.db
+frontend/node_modules/
+frontend/dist/
+.env
+*.pyc
