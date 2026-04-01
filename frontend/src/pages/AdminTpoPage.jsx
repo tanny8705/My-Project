@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
+<<<<<<< HEAD
 import { apiAdminUserCreate, apiAdminUserDelete, apiAdminUserUpdate, apiAdminUsers, apiAdminUserStatus } from "../api.js";
+=======
+import { apiAdminUserCreate, apiAdminUserDelete, apiAdminUsers, apiAdminUserStatus } from "../api.js";
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 import { useAuth } from "../context/AuthContext.jsx";
 
 export default function AdminTpoPage() {
@@ -20,16 +24,20 @@ export default function AdminTpoPage() {
     })();
   }, [token, user]);
 
+<<<<<<< HEAD
   const refresh = async () => {
     const data = await apiAdminUsers(token, "tpo");
     setUsers(data.users || []);
   };
 
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
   const rows = useMemo(() => users.filter((u) => u.roles.includes("tpo")), [users]);
   if (!token && !loading) return <Navigate to="/login" replace />;
   if (loading || !user) return <p className="muted layout">Loading…</p>;
   if (!user.roles?.includes("admin")) return <Navigate to="/dashboard" replace />;
 
+<<<<<<< HEAD
   const setStatus = async (id, status) => { try { await apiAdminUserStatus(token, id, { status }); setMsg(`TPO ${status}`); await refresh(); } catch (e) { setErr(e.message); } };
   const removeUser = async (id) => { try { await apiAdminUserDelete(token, id); setMsg("TPO removed"); await refresh(); } catch (e) { setErr(e.message); } };
   const create = async (e) => { e.preventDefault(); try { await apiAdminUserCreate(token, { ...form, role: "tpo" }); setMsg("TPO created"); await refresh(); } catch (e2) { setErr(e2.message); } };
@@ -45,6 +53,11 @@ export default function AdminTpoPage() {
       setErr(e.message);
     }
   };
+=======
+  const setStatus = async (id, status) => { try { await apiAdminUserStatus(token, id, { status }); setMsg(`TPO ${status}`); } catch (e) { setErr(e.message); } };
+  const removeUser = async (id) => { try { await apiAdminUserDelete(token, id); setMsg("TPO removed"); } catch (e) { setErr(e.message); } };
+  const create = async (e) => { e.preventDefault(); try { await apiAdminUserCreate(token, { ...form, role: "tpo" }); setMsg("TPO created"); } catch (e2) { setErr(e2.message); } };
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 
   return <div className="layout"><h1>TPO Management</h1>{err && <p className="error">{err}</p>}{msg && <p style={{ color: "var(--success)" }}>{msg}</p>}
     <form className="card" onSubmit={create} style={{ marginBottom: "1rem" }}>
@@ -54,7 +67,11 @@ export default function AdminTpoPage() {
         <input placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
       </div><button type="submit" className="btn btn-primary" style={{ marginTop: "0.75rem" }}>Add TPO</button>
     </form>
+<<<<<<< HEAD
     <div className="card" style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}><thead><tr style={{ textAlign: "left", borderBottom: "1px solid var(--border)" }}><th style={{ padding: "0.5rem" }}>Email</th><th style={{ padding: "0.5rem" }}>Status</th><th style={{ padding: "0.5rem" }}>Actions</th></tr></thead><tbody>{rows.map((u) => <tr key={u.id} style={{ borderBottom: "1px solid var(--border)" }}><td style={{ padding: "0.5rem" }}>{u.email}</td><td style={{ padding: "0.5rem" }}>{u.status}</td><td style={{ padding: "0.5rem", display: "flex", gap: "0.35rem", flexWrap: "wrap" }}><button type="button" className="btn btn-ghost" onClick={() => editTpo(u)}>Edit</button><button type="button" className="btn btn-ghost" onClick={() => setStatus(u.id, "active")}>Unblock</button><button type="button" className="btn btn-ghost" onClick={() => setStatus(u.id, "blocked")}>Block</button><button type="button" className="btn btn-danger" onClick={() => setStatus(u.id, "blacklisted")}>Blacklist</button><button type="button" className="btn btn-danger" onClick={() => removeUser(u.id)}>Remove</button></td></tr>)}</tbody></table></div>
+=======
+    <div className="card" style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}><thead><tr style={{ textAlign: "left", borderBottom: "1px solid var(--border)" }}><th style={{ padding: "0.5rem" }}>Email</th><th style={{ padding: "0.5rem" }}>Status</th><th style={{ padding: "0.5rem" }}>Actions</th></tr></thead><tbody>{rows.map((u) => <tr key={u.id} style={{ borderBottom: "1px solid var(--border)" }}><td style={{ padding: "0.5rem" }}>{u.email}</td><td style={{ padding: "0.5rem" }}>{u.status}</td><td style={{ padding: "0.5rem", display: "flex", gap: "0.35rem", flexWrap: "wrap" }}><button type="button" className="btn btn-ghost" onClick={() => setStatus(u.id, "active")}>Unblock</button><button type="button" className="btn btn-ghost" onClick={() => setStatus(u.id, "blocked")}>Block</button><button type="button" className="btn btn-danger" onClick={() => setStatus(u.id, "blacklisted")}>Blacklist</button><button type="button" className="btn btn-danger" onClick={() => removeUser(u.id)}>Remove</button></td></tr>)}</tbody></table></div>
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
   </div>;
 }
 

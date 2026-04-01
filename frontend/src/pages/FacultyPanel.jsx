@@ -8,7 +8,10 @@ import {
   apiInternshipReject,
   apiInternships,
   apiReject,
+<<<<<<< HEAD
   apiScopedStudentsCsv,
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 } from "../api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -33,6 +36,7 @@ function exportCsv(rows) {
   URL.revokeObjectURL(url);
 }
 
+<<<<<<< HEAD
 function saveBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -44,6 +48,8 @@ function saveBlob(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 export default function FacultyPanel() {
   const { token, user, loading } = useAuth();
   const [items, setItems] = useState([]);
@@ -134,6 +140,7 @@ export default function FacultyPanel() {
     }
   }
 
+<<<<<<< HEAD
   async function downloadScopedStudentReport() {
     setMsg("");
     setErr("");
@@ -146,6 +153,8 @@ export default function FacultyPanel() {
     }
   }
 
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
   return (
     <div className="layout">
       <h1>Faculty panel</h1>
@@ -225,6 +234,7 @@ export default function FacultyPanel() {
         <h2>Department Student Credits</h2>
         <p className="muted">All registered students in your branch are listed, even with zero points.</p>
         {studentsReport.length > 0 && (
+<<<<<<< HEAD
           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
             <button type="button" className="btn btn-ghost" onClick={downloadScopedStudentReport}>
               Download student report (CSV)
@@ -233,6 +243,11 @@ export default function FacultyPanel() {
               Download credits only (CSV)
             </button>
           </div>
+=======
+          <button type="button" className="btn btn-ghost" onClick={() => exportCsv(studentsReport)} style={{ marginBottom: "0.75rem" }}>
+            Export CSV
+          </button>
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
         )}
         {studentsReport.length === 0 ? (
           <p className="muted">No students found in your department.</p>

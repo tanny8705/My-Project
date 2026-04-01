@@ -72,8 +72,11 @@ def _ensure_sqlite_columns():
     # faculty
     if not has_col("faculty", "department_id"):
         db.session.execute(text("ALTER TABLE faculty ADD COLUMN department_id INTEGER"))
+<<<<<<< HEAD
     if not has_col("faculty", "division"):
         db.session.execute(text("ALTER TABLE faculty ADD COLUMN division VARCHAR(10)"))
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
 
     db.session.commit()
 
@@ -149,7 +152,10 @@ with app.app_context():
                     name=f"{code} Faculty",
                     department_id=d.id if d else None,
                     department=code,
+<<<<<<< HEAD
                     division="A",
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
                     designation="Mentor",
                 )
             )
@@ -174,7 +180,10 @@ with app.app_context():
                     name=f"{code} HOD",
                     department_id=d.id if d else None,
                     department=code,
+<<<<<<< HEAD
                     division="A",
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
                     designation="HOD",
                 )
             )
@@ -194,7 +203,10 @@ with app.app_context():
                 name="Demo TPO",
                 department_id=None,
                 department=None,
+<<<<<<< HEAD
                 division=None,
+=======
+>>>>>>> ab414b3a3dd5bc6efdbae3f81b689be06cdd5661
                 designation="TPO",
             )
         )
