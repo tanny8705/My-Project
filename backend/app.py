@@ -1,5 +1,5 @@
 import os
-
+#main app 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -110,4 +110,4 @@ with app.app_context():
 #         appointment_update.s())
     
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
